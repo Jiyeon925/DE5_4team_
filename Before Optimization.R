@@ -1,19 +1,19 @@
-# ÇÊ¿äÇÑ ÆĞÅ°Áö ¼³Ä¡ ¹× ·Îµå
+# í•„ìš”í•œ íŒ¨í‚¤ì§€ ì„¤ì¹˜ ë° ë¡œë“œ
 required_packages <- c("igraph", "Matrix", "MASS", "splines", "ggplot2", "reshape2", "glmnet")
 new_packages <- required_packages[!(required_packages %in% installed.packages()[,"Package"])]
 if(length(new_packages)) install.packages(new_packages)
 
 library(igraph)
 library(Matrix)
-library(MASS)       # ´Ùº¯·® Á¤±ÔºĞÆ÷ »ùÇÃ¸µÀ» À§ÇØ
-library(splines)    # B-spline ±âÀú ÇÔ¼ö »ı¼ºÀ» À§ÇØ
-library(ggplot2)    # ½Ã°¢È­¸¦ À§ÇØ
-library(reshape2)   # µ¥ÀÌÅÍ Àç±¸¼ºÀ» À§ÇØ
-library(glmnet)     # Æä³ÎÆ¼ ±â¹İ È¸±Í¸¦ À§ÇØ
+library(MASS)       # ë‹¤ë³€ëŸ‰ ì •ê·œë¶„í¬ ìƒ˜í”Œë§ì„ ìœ„í•´
+library(splines)    # B-spline ê¸°ì € í•¨ìˆ˜ ìƒì„±ì„ ìœ„í•´
+library(ggplot2)    # ì‹œê°í™”ë¥¼ ìœ„í•´
+library(reshape2)   # ë°ì´í„° ì¬êµ¬ì„±ì„ ìœ„í•´
+library(glmnet)     # í˜ë„í‹° ê¸°ë°˜ íšŒê·€ë¥¼ ìœ„í•´
 
-# 1. µ¥ÀÌÅÍ »ı¼º ¹× ³×Æ®¿öÅ© ½Ã°¢È­
+# 1. ë°ì´í„° ìƒì„± ë° ë„¤íŠ¸ì›Œí¬ ì‹œê°í™”
 
-# ½Ã°£¿¡ µû¶ó º¯ÇÏ´Â ÇÔ¼ö f1(t), f2(t), f3(t) Á¤ÀÇ
+# ì‹œê°„ì— ë”°ë¼ ë³€í•˜ëŠ” í•¨ìˆ˜ f1(t), f2(t), f3(t) ì •ì˜
 f1 <- function(t) {
   if (t >= 0 && t <= 0.342) {
     return(5 * (t - 0.5)^2 - 0.125)
@@ -22,7 +22,7 @@ f1 <- function(t) {
   } else if (t > 0.658 && t <= 1) {
     return(-5 * (t - 0.5)^2 + 0.125)
   } else {
-    stop("t´Â [0, 1] ¹üÀ§ ³»¿¡ ÀÖ¾î¾ß ÇÕ´Ï´Ù.")
+    stop("tëŠ” [0, 1] ë²”ìœ„ ë‚´ì— ìˆì–´ì•¼ í•©ë‹ˆë‹¤.")
   }
 }
 
@@ -34,7 +34,7 @@ f2 <- function(t) {
   } else if (t > 0.7 && t <= 1) {
     return(3 * t - 2.1)
   } else {
-    stop("t´Â [0, 1] ¹üÀ§ ³»¿¡ ÀÖ¾î¾ß ÇÕ´Ï´Ù.")
+    stop("tëŠ” [0, 1] ë²”ìœ„ ë‚´ì— ìˆì–´ì•¼ í•©ë‹ˆë‹¤.")
   }
 }
 
@@ -46,12 +46,12 @@ f3 <- function(t) {
   }
 }
 
-# ÁıÁß Çà·Ä »ı¼º ÇÔ¼ö Á¤ÀÇ (´ë°¢ ¿ìÀ§ º¸Àå)
+# ì§‘ì¤‘ í–‰ë ¬ ìƒì„± í•¨ìˆ˜ ì •ì˜ (ëŒ€ê° ìš°ìœ„ ë³´ì¥)
 generate_precision_matrix <- function(block_sizes, fk, rho = 0.08, epsilon = 1e-4) {
-  p <- sum(block_sizes)  # ÀüÃ¼ ³ëµå ¼ö
-  A <- matrix(0, nrow = p, ncol = p)  # 0À¸·Î ÃÊ±âÈ­
+  p <- sum(block_sizes)  # ì „ì²´ ë…¸ë“œ ìˆ˜
+  A <- matrix(0, nrow = p, ncol = p)  # 0ìœ¼ë¡œ ì´ˆê¸°í™”
   
-  # ºí·ÏÀÇ ½ÃÀÛ°ú ³¡ ÀÎµ¦½º °è»ê
+  # ë¸”ë¡ì˜ ì‹œì‘ê³¼ ë ì¸ë±ìŠ¤ ê³„ì‚°
   block_ends <- cumsum(block_sizes)
   block_starts <- c(1, head(block_ends, -1) + 1)
   
@@ -60,135 +60,135 @@ generate_precision_matrix <- function(block_sizes, fk, rho = 0.08, epsilon = 1e-
     end <- block_ends[k]
     size <- block_sizes[k]
     
-    # º£¸£´©ÀÌ ·£´ı º¯¼ö »ı¼º
+    # ë² ë¥´ëˆ„ì´ ëœë¤ ë³€ìˆ˜ ìƒì„±
     U <- matrix(rbinom(size * size, 1, rho), nrow = size, ncol = size)
     
-    # ´ë°¢ ¼ººĞÀº 0À¸·Î ¼³Á¤ (ÀÚ±â ÀÚ½Å°úÀÇ ¿¬°áÀº ¾øÀ½)
+    # ëŒ€ê° ì„±ë¶„ì€ 0ìœ¼ë¡œ ì„¤ì • (ìê¸° ìì‹ ê³¼ì˜ ì—°ê²°ì€ ì—†ìŒ)
     diag(U) <- 0
     
-    # ºñ´ë°¢ ¼ººĞ¿¡ fk[k] * U Àû¿ë
+    # ë¹„ëŒ€ê° ì„±ë¶„ì— fk[k] * U ì ìš©
     A_block <- fk[k] * U
     
-    # Çà·Ä A¿¡ ºí·Ï »ğÀÔ
+    # í–‰ë ¬ Aì— ë¸”ë¡ ì‚½ì…
     A[start:end, start:end] <- A_block
   }
   
-  # ´ëÄª Çà·Ä·Î ¸¸µé±â (±³È¯ °¡´É¼º À¯Áö)
+  # ëŒ€ì¹­ í–‰ë ¬ë¡œ ë§Œë“¤ê¸° (êµí™˜ ê°€ëŠ¥ì„± ìœ ì§€)
   A <- (A + t(A)) / 2
   
-  # ´ë°¢ ¼ººĞ ¼³Á¤ (´ë°¢ ¿ìÀ§ º¸Àå)
-  diag(A) <- abs(rowSums(A)) + 1  # °¢ ÇàÀÇ Àı´ë°ª ÇÕ + 1
+  # ëŒ€ê° ì„±ë¶„ ì„¤ì • (ëŒ€ê° ìš°ìœ„ ë³´ì¥)
+  diag(A) <- abs(rowSums(A)) + 1  # ê° í–‰ì˜ ì ˆëŒ€ê°’ í•© + 1
   
-  # ¾çÀÇ Á¤ºÎÈ£¼º È®ÀÎ ¹× º¸Á¤
+  # ì–‘ì˜ ì •ë¶€í˜¸ì„± í™•ì¸ ë° ë³´ì •
   eigenvalues <- eigen(A, symmetric = TRUE, only.values = TRUE)$values
   
   if (min(eigenvalues) <= 0) {
     A <- A + (abs(min(eigenvalues)) + epsilon) * diag(p)
-    cat("¾çÀÇ Á¤ºÎÈ£¼º º¸Á¤À» ¼öÇàÇß½À´Ï´Ù.\n")
+    cat("ì–‘ì˜ ì •ë¶€í˜¸ì„± ë³´ì •ì„ ìˆ˜í–‰í–ˆìŠµë‹ˆë‹¤.\n")
   }
   
   return(A)
 }
 
-# ºí·Ïº° ³ëµå ¼ö ¼³Á¤
-block_sizes <- c(50, 30, 20)  # ºí·Ï1: 50³ëµå, ºí·Ï2: 30³ëµå, ºí·Ï3: 20³ëµå
+# ë¸”ë¡ë³„ ë…¸ë“œ ìˆ˜ ì„¤ì •
+block_sizes <- c(50, 30, 20)  # ë¸”ë¡1: 50ë…¸ë“œ, ë¸”ë¡2: 30ë…¸ë“œ, ë¸”ë¡3: 20ë…¸ë“œ
 
-# ½Ã°£ ´Ü°è ¼³Á¤
+# ì‹œê°„ ë‹¨ê³„ ì„¤ì •
 time_steps <- 10
 
-# »ùÇÃ Å©±â ¼³Á¤
+# ìƒ˜í”Œ í¬ê¸° ì„¤ì •
 n_samples <- 200
 
-# ÀüÃ¼ ³ëµå ¼ö
+# ì „ì²´ ë…¸ë“œ ìˆ˜
 p <- sum(block_sizes)
 
-# »ı¼ºµÈ µ¥ÀÌÅÍ¸¦ ÀúÀåÇÒ ¹è¿­ ÃÊ±âÈ­ (n_samples x p x time_steps)
+# ìƒì„±ëœ ë°ì´í„°ë¥¼ ì €ì¥í•  ë°°ì—´ ì´ˆê¸°í™” (n_samples x p x time_steps)
 data_array <- array(0, dim = c(n_samples, p, time_steps))
 
-# °¢ ½Ã°£ ´Ü°è¿¡¼­ÀÇ °øºĞ»ê Çà·ÄÀ» ÀúÀåÇÒ ¸®½ºÆ® ÃÊ±âÈ­
+# ê° ì‹œê°„ ë‹¨ê³„ì—ì„œì˜ ê³µë¶„ì‚° í–‰ë ¬ì„ ì €ì¥í•  ë¦¬ìŠ¤íŠ¸ ì´ˆê¸°í™”
 covariance_matrices <- vector("list", time_steps)
 
-# °¢ ½Ã°£ ´Ü°è¿¡¼­ÀÇ ÁıÁß Çà·ÄÀ» ÀúÀåÇÒ ¸®½ºÆ® ÃÊ±âÈ­
+# ê° ì‹œê°„ ë‹¨ê³„ì—ì„œì˜ ì§‘ì¤‘ í–‰ë ¬ì„ ì €ì¥í•  ë¦¬ìŠ¤íŠ¸ ì´ˆê¸°í™”
 precision_matrices <- vector("list", time_steps)
 
-# ½Ã°£ Á¡µé °è»ê (0ºÎÅÍ 1±îÁö ±ÕµîÇÑ °£°İÀ¸·Î)
+# ì‹œê°„ ì ë“¤ ê³„ì‚° (0ë¶€í„° 1ê¹Œì§€ ê· ë“±í•œ ê°„ê²©ìœ¼ë¡œ)
 time_points <- seq(0, 1, length.out = time_steps)
 
-# ±×·¡ÇÁ »ı¼º ¹× ½Ã°¢È­ ¹İº¹À» À§ÇÑ ±×·¡ÇÈ ÆÄ¶ó¹ÌÅÍ ¼³Á¤
-par(mfrow = c(2, ceiling(time_steps / 2)), mar = c(1, 1, 2, 1))  # ±×·¡ÇÁ °£ ¿©¹é Á¶Á¤
+# ê·¸ë˜í”„ ìƒì„± ë° ì‹œê°í™” ë°˜ë³µì„ ìœ„í•œ ê·¸ë˜í”½ íŒŒë¼ë¯¸í„° ì„¤ì •
+par(mfrow = c(2, ceiling(time_steps / 2)), mar = c(1, 1, 2, 1))  # ê·¸ë˜í”„ ê°„ ì—¬ë°± ì¡°ì •
 
 for (t_idx in 1:time_steps) {
   t_real <- time_points[t_idx]
   
-  cat("\n½Ã°£ ´Ü°è:", t_idx, "(t_real =", round(t_real, 3), ")\n")
+  cat("\nì‹œê°„ ë‹¨ê³„:", t_idx, "(t_real =", round(t_real, 3), ")\n")
   
-  # °¢ ÇÔ¼ö f1(t), f2(t), f3(t) °è»ê
+  # ê° í•¨ìˆ˜ f1(t), f2(t), f3(t) ê³„ì‚°
   fk_current <- c(f1(t_real), f2(t_real), f3(t_real))
   
   cat("fk_current:", fk_current, "\n")
   
-  # ÁıÁß Çà·Ä »ı¼º
+  # ì§‘ì¤‘ í–‰ë ¬ ìƒì„±
   A_t <- generate_precision_matrix(block_sizes, fk_current, rho = 0.08)
   
-  # A_tÀÇ Â÷¿ø È®ÀÎ
+  # A_tì˜ ì°¨ì› í™•ì¸
   cat("A_t dimensions:", dim(A_t), "\n")
   
-  # °øºĞ»ê Çà·Ä °è»ê ½Ãµµ
+  # ê³µë¶„ì‚° í–‰ë ¬ ê³„ì‚° ì‹œë„
   Sigma_t <- tryCatch({
     solve(A_t)
   }, error = function(e) {
-    cat("°øºĞ»ê Çà·ÄÀ» °è»êÇÏ´Â Áß ¿¡·¯ ¹ß»ı:", e$message, "\n")
-    # Á¤¹Ğ Çà·Ä¿¡ ¾à°£ÀÇ ³ëÀÌÁî Ãß°¡ÇÏ¿© ¾çÀÇ Á¤ºÎÈ£¼º º¸Àå
+    cat("ê³µë¶„ì‚° í–‰ë ¬ì„ ê³„ì‚°í•˜ëŠ” ì¤‘ ì—ëŸ¬ ë°œìƒ:", e$message, "\n")
+    # ì •ë°€ í–‰ë ¬ì— ì•½ê°„ì˜ ë…¸ì´ì¦ˆ ì¶”ê°€í•˜ì—¬ ì–‘ì˜ ì •ë¶€í˜¸ì„± ë³´ì¥
     A_t_adj <- A_t + 1e-4 * diag(p)
     solve(A_t_adj)
   })
   
-  # Sigma_tÀÇ Â÷¿ø È®ÀÎ
+  # Sigma_tì˜ ì°¨ì› í™•ì¸
   cat("Sigma_t dimensions:", dim(Sigma_t), "\n")
   
-  # °øºĞ»ê Çà·Ä ´ëÄªÈ­ (¼öÄ¡ ¿ÀÂ÷ ¹æÁö)
+  # ê³µë¶„ì‚° í–‰ë ¬ ëŒ€ì¹­í™” (ìˆ˜ì¹˜ ì˜¤ì°¨ ë°©ì§€)
   Sigma_t <- (Sigma_t + t(Sigma_t)) / 2
   
-  # ¾çÀÇ Á¤ºÎÈ£¼º È®ÀÎ ¹× º¸Á¤
+  # ì–‘ì˜ ì •ë¶€í˜¸ì„± í™•ì¸ ë° ë³´ì •
   eigenvalues <- eigen(Sigma_t, symmetric = TRUE, only.values = TRUE)$values
   min_eigenvalue <- min(eigenvalues)
   
   if (min_eigenvalue <= 0) {
     Sigma_t <- Sigma_t + (abs(min_eigenvalue) + 1e-4) * diag(p)
-    cat("¾çÀÇ Á¤ºÎÈ£¼º º¸Á¤À» ¼öÇàÇß½À´Ï´Ù.\n")
+    cat("ì–‘ì˜ ì •ë¶€í˜¸ì„± ë³´ì •ì„ ìˆ˜í–‰í–ˆìŠµë‹ˆë‹¤.\n")
   }
   
-  # °øºĞ»ê Çà·Ä ¹× ÁıÁß Çà·Ä ÀúÀå
+  # ê³µë¶„ì‚° í–‰ë ¬ ë° ì§‘ì¤‘ í–‰ë ¬ ì €ì¥
   covariance_matrices[[t_idx]] <- Sigma_t
   precision_matrices[[t_idx]] <- A_t
   
-  # ´Ùº¯·® Á¤±ÔºĞÆ÷·ÎºÎÅÍ µ¥ÀÌÅÍ »ùÇÃ¸µ
+  # ë‹¤ë³€ëŸ‰ ì •ê·œë¶„í¬ë¡œë¶€í„° ë°ì´í„° ìƒ˜í”Œë§
   data_samples <- mvrnorm(n = n_samples, mu = rep(0, p), Sigma = Sigma_t)
   
-  # µ¥ÀÌÅÍ ¹è¿­¿¡ ÀúÀå
+  # ë°ì´í„° ë°°ì—´ì— ì €ì¥
   data_array[, , t_idx] <- data_samples
   
-  # ÁıÁß Çà·ÄÀ» ÀÎÁ¢ Çà·Ä·Î º¯È¯ (ºñ´ë°¢ ¼ººĞÀÌ 0ÀÌ ¾Æ´Ñ °æ¿ì¿¡¸¸ ¿¬°á)
+  # ì§‘ì¤‘ í–‰ë ¬ì„ ì¸ì ‘ í–‰ë ¬ë¡œ ë³€í™˜ (ë¹„ëŒ€ê° ì„±ë¶„ì´ 0ì´ ì•„ë‹Œ ê²½ìš°ì—ë§Œ ì—°ê²°)
   adj_matrix_t <- as.matrix(A_t)
-  adj_matrix_t[adj_matrix_t != 0] <- 1  # ¿¬°á ¿©ºÎ¸¸ Ç¥½Ã
-  diag(adj_matrix_t) <- 0              # ÀÚ±â ÀÚ½Å°úÀÇ ¿¬°á Á¦°Å
+  adj_matrix_t[adj_matrix_t != 0] <- 1  # ì—°ê²° ì—¬ë¶€ë§Œ í‘œì‹œ
+  diag(adj_matrix_t) <- 0              # ìê¸° ìì‹ ê³¼ì˜ ì—°ê²° ì œê±°
   
-  # ±×·¡ÇÁ »ı¼º
+  # ê·¸ë˜í”„ ìƒì„±
   g_t <- graph_from_adjacency_matrix(adj_matrix_t, mode = "undirected", diag = FALSE)
   
-  # Á¤Á¡ ¼ö¿Í °£¼± ¼ö È®ÀÎ
+  # ì •ì  ìˆ˜ì™€ ê°„ì„  ìˆ˜ í™•ì¸
   cat("Time_step", t_idx, "has", vcount(g_t), "vertices and", ecount(g_t), "edges.\n")
   
-  # Á¤Á¡ ÀÌ¸§À» ¸í½ÃÀûÀ¸·Î ¼³Á¤
+  # ì •ì  ì´ë¦„ì„ ëª…ì‹œì ìœ¼ë¡œ ì„¤ì •
   V(g_t)$name <- as.character(1:p)
   
-  # ºí·Ï Á¤º¸ Ãß°¡ (Á¤Á¡ ¼ø¼­´ë·Î ÇÒ´ç)
+  # ë¸”ë¡ ì •ë³´ ì¶”ê°€ (ì •ì  ìˆœì„œëŒ€ë¡œ í• ë‹¹)
   V(g_t)$block <- rep(1:length(block_sizes), times = block_sizes)
   
-  # ºí·Ïº° »ö»ó ¼³Á¤
+  # ë¸”ë¡ë³„ ìƒ‰ìƒ ì„¤ì •
   block_colors <- c("red", "green", "blue")
   
-  # ºí·Ï »ö»óÀÌ ¿Ã¹Ù¸£°Ô ¼³Á¤µÇ¾ú´ÂÁö È®ÀÎ
+  # ë¸”ë¡ ìƒ‰ìƒì´ ì˜¬ë°”ë¥´ê²Œ ì„¤ì •ë˜ì—ˆëŠ”ì§€ í™•ì¸
   if (length(V(g_t)$block) != vcount(g_t)) {
     cat("Error: Length of block assignments (", length(V(g_t)$block), 
         ") does not match number of vertices (", vcount(g_t), ").\n", sep = "")
@@ -196,25 +196,25 @@ for (t_idx in 1:time_steps) {
     V(g_t)$color <- block_colors[V(g_t)$block]
   }
   
-  # ³×Æ®¿öÅ© ÇÃ·Ô
+  # ë„¤íŠ¸ì›Œí¬ í”Œë¡¯
   plot(g_t,
        vertex.size = 3,
        vertex.label = NA,
-       main = paste("½Ã°£ ´Ü°è", t_idx, "\n(t =", round(t_real, 2), ")"),
+       main = paste("ì‹œê°„ ë‹¨ê³„", t_idx, "\n(t =", round(t_real, 2), ")"),
        layout = layout_with_fr(g_t))
 }
 
-# µ¥ÀÌÅÍ ±¸Á¶ È®ÀÎ
-cat("\nµ¥ÀÌÅÍ ¹è¿­ÀÇ Â÷¿ø:", dim(data_array), "\n")  # n_samples x p x time_steps
+# ë°ì´í„° êµ¬ì¡° í™•ì¸
+cat("\në°ì´í„° ë°°ì—´ì˜ ì°¨ì›:", dim(data_array), "\n")  # n_samples x p x time_steps
 
-# µ¥ÀÌÅÍ ¹è¿­ÀÇ ¿¹½Ã Ãâ·Â
-# Ã¹ ¹øÂ° »ùÇÃ, Ã¹ ¹øÂ° ³ëµå, ½Ã°£ ´Ü°èº° °ª
-cat("Ã¹ ¹øÂ° »ùÇÃ, Ã¹ ¹øÂ° ³ëµåÀÇ ½Ã°£ ´Ü°èº° °ª:\n")
+# ë°ì´í„° ë°°ì—´ì˜ ì˜ˆì‹œ ì¶œë ¥
+# ì²« ë²ˆì§¸ ìƒ˜í”Œ, ì²« ë²ˆì§¸ ë…¸ë“œ, ì‹œê°„ ë‹¨ê³„ë³„ ê°’
+cat("ì²« ë²ˆì§¸ ìƒ˜í”Œ, ì²« ë²ˆì§¸ ë…¸ë“œì˜ ì‹œê°„ ë‹¨ê³„ë³„ ê°’:\n")
 print(data_array[1, 1, ])
 
-# 2. ºÎºĞ »ó°ü °è¼ö °è»ê
+# 2. ë¶€ë¶„ ìƒê´€ ê³„ìˆ˜ ê³„ì‚°
 
-# ºÎºĞ »ó°ü °è¼ö¸¦ ÀúÀåÇÒ ¸®½ºÆ® ÃÊ±âÈ­
+# ë¶€ë¶„ ìƒê´€ ê³„ìˆ˜ë¥¼ ì €ì¥í•  ë¦¬ìŠ¤íŠ¸ ì´ˆê¸°í™”
 partial_correlations <- vector("list", time_steps)
 
 for (t_idx in 1:time_steps) {
@@ -223,13 +223,13 @@ for (t_idx in 1:time_steps) {
   
   cat("\nTheta_t for time_step", t_idx, ":\n")
   
-  # Theta_t°¡ NULLÀÎÁö È®ÀÎ
+  # Theta_tê°€ NULLì¸ì§€ í™•ì¸
   if (is.null(Theta_t)) {
     cat("Theta_t for time_step", t_idx, "is NULL. Skipping.\n")
     next
   }
   
-  # Theta_tÀÇ Å©±â È®ÀÎ
+  # Theta_tì˜ í¬ê¸° í™•ì¸
   cat("Theta_t dimensions:", dim(Theta_t), "\n")
   
   if (!all(dim(Theta_t) == c(p, p))) {
@@ -239,7 +239,7 @@ for (t_idx in 1:time_steps) {
   
   cat("Processing time_step", t_idx, "\n")
   
-  # ºÎºĞ »ó°ü °è¼ö °è»ê
+  # ë¶€ë¶„ ìƒê´€ ê³„ìˆ˜ ê³„ì‚°
   rho_matrix_t <- matrix(0, nrow = p, ncol = p)
   
   for (i in 1:(p-1)) {
@@ -253,54 +253,54 @@ for (t_idx in 1:time_steps) {
   partial_correlations[[t_idx]] <- rho_matrix_t
 }
 
-# ºÎºĞ »ó°ü °è¼ö Á¸Àç ¿©ºÎ È®ÀÎ
-cat("\npartial_correlations ¸®½ºÆ®ÀÇ NULL ¿©ºÎ:\n")
+# ë¶€ë¶„ ìƒê´€ ê³„ìˆ˜ ì¡´ì¬ ì—¬ë¶€ í™•ì¸
+cat("\npartial_correlations ë¦¬ìŠ¤íŠ¸ì˜ NULL ì—¬ë¶€:\n")
 print(sapply(partial_correlations, is.null))  # Should all be FALSE
 
-# 3. B-spline ±âÀú ÇÔ¼ö »ı¼º
+# 3. B-spline ê¸°ì € í•¨ìˆ˜ ìƒì„±
 
-# B-spline ±âÀú ÇÔ¼ö »ı¼º (°è¼ö ÁßÃ¸À» ¹İ¿µÇÏµµ·Ï ¼öÁ¤)
-num_knots <- 5  # ³»ºÎ ³ëµå ¼ö¸¦ 5·Î ¼³Á¤
-degree <- 3     # 3Â÷ B-spline
+# B-spline ê¸°ì € í•¨ìˆ˜ ìƒì„± (ê³„ìˆ˜ ì¤‘ì²©ì„ ë°˜ì˜í•˜ë„ë¡ ìˆ˜ì •)
+num_knots <- 5  # ë‚´ë¶€ ë…¸ë“œ ìˆ˜ë¥¼ 5ë¡œ ì„¤ì •
+degree <- 3     # 3ì°¨ B-spline
 
-# ½Ã°£ Á¡µé °è»ê (0ºÎÅÍ 1±îÁö ±ÕµîÇÑ °£°İÀ¸·Î)
+# ì‹œê°„ ì ë“¤ ê³„ì‚° (0ë¶€í„° 1ê¹Œì§€ ê· ë“±í•œ ê°„ê²©ìœ¼ë¡œ)
 time_points <- seq(0, 1, length.out = time_steps)
 
-# ³ëµå ¼³Á¤ (°æ°è ³ëµå Æ÷ÇÔ)
+# ë…¸ë“œ ì„¤ì • (ê²½ê³„ ë…¸ë“œ í¬í•¨)
 knots <- c(rep(time_points[1], degree), 
            quantile(time_points, probs = seq(0, 1, length.out = num_knots + 2))[-c(1, num_knots + 2)], 
            rep(time_points[length(time_points)], degree))
 
-# splineDesign ÇÔ¼ö È£Ãâ ½Ã outer.ok = TRUE ¼³Á¤
+# splineDesign í•¨ìˆ˜ í˜¸ì¶œ ì‹œ outer.ok = TRUE ì„¤ì •
 bs_basis <- splineDesign(knots = knots, x = time_points, ord = degree + 1, outer.ok = TRUE)
 
-# ±âÀú ÇÔ¼öÀÇ Â÷¿ø È®ÀÎ
+# ê¸°ì € í•¨ìˆ˜ì˜ ì°¨ì› í™•ì¸
 cat("\nbs_basis dimensions:", dim(bs_basis), "\n")  # time_steps x (num_knots + degree)
 
-# B-spline ±âÀú ÇÔ¼ö µ¥ÀÌÅÍ¸¦ µ¥ÀÌÅÍ ÇÁ·¹ÀÓÀ¸·Î º¯È¯
+# B-spline ê¸°ì € í•¨ìˆ˜ ë°ì´í„°ë¥¼ ë°ì´í„° í”„ë ˆì„ìœ¼ë¡œ ë³€í™˜
 spline_data <- data.frame(Time = time_points)
 for (h in 1:ncol(bs_basis)) {
   spline_data[[paste0("B", h)]] <- bs_basis[, h]
 }
 
-# µ¥ÀÌÅÍ ÇÁ·¹ÀÓÀ» ±æ°Ô º¯È¯ (melt)
+# ë°ì´í„° í”„ë ˆì„ì„ ê¸¸ê²Œ ë³€í™˜ (melt)
 if (exists("spline_data")) {
   spline_data_long <- melt(spline_data, id.vars = "Time", variable.name = "Spline", value.name = "Value")
 } else {
-  stop("Error: 'spline_data' °´Ã¼°¡ »ı¼ºµÇÁö ¾Ê¾Ò½À´Ï´Ù.")
+  stop("Error: 'spline_data' ê°ì²´ê°€ ìƒì„±ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤.")
 }
 
-# `spline_data_long` °´Ã¼ È®ÀÎ
+# `spline_data_long` ê°ì²´ í™•ì¸
 if (!exists("spline_data_long")) {
-  stop("Error: 'spline_data_long' °´Ã¼°¡ »ı¼ºµÇÁö ¾Ê¾Ò½À´Ï´Ù.")
+  stop("Error: 'spline_data_long' ê°ì²´ê°€ ìƒì„±ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤.")
 }
 
-cat("\nspline_data_longÀÇ Ã¹ ¸î Çà:\n")
+cat("\nspline_data_longì˜ ì²« ëª‡ í–‰:\n")
 print(head(spline_data_long))
 
-# 4. ±×·ì SCAD ÆĞ³ÎÆ¼ ¹× ÃÖÀûÈ­ ¾Ë°í¸®Áò ±¸Çö
+# 4. ê·¸ë£¹ SCAD íŒ¨ë„í‹° ë° ìµœì í™” ì•Œê³ ë¦¬ì¦˜ êµ¬í˜„
 
-# ¼±ÅÃµÈ º¯¼ö ½Ö ¼±ÅÃ (¿¹: 5°³ÀÇ º¯¼ö ½Ö)
+# ì„ íƒëœ ë³€ìˆ˜ ìŒ ì„ íƒ (ì˜ˆ: 5ê°œì˜ ë³€ìˆ˜ ìŒ)
 selected_pairs <- list(
   c(1, 2),
   c(1, 3),
@@ -309,24 +309,24 @@ selected_pairs <- list(
   c(7, 8)
 )
 
-# ±×·ì ±¸Á¶ Á¤ÀÇ: °¢ ½ºÇÃ¶óÀÎ ±âÀú ÇÔ¼ö´Â degree+1°³ÀÇ ÀÎÁ¢ÇÑ °è¼ö¿Í ¿¬°üµÊ
+# ê·¸ë£¹ êµ¬ì¡° ì •ì˜: ê° ìŠ¤í”Œë¼ì¸ ê¸°ì € í•¨ìˆ˜ëŠ” degree+1ê°œì˜ ì¸ì ‘í•œ ê³„ìˆ˜ì™€ ì—°ê´€ë¨
 group_size <- degree + 1
 groups <- list()
 num_basis <- ncol(bs_basis)
 for (h in 1:num_basis) {
-  # °¢ ±âÀú ÇÔ¼ö¿¡ ´ëÇØ ±×·ì Á¤ÀÇ (ÁßÃ¸)
-  # h¹øÂ° ±âÀú ÇÔ¼ö´Â h, h+1, ..., h+degree °è¼ö¿Í °ü·ÃµÊ
+  # ê° ê¸°ì € í•¨ìˆ˜ì— ëŒ€í•´ ê·¸ë£¹ ì •ì˜ (ì¤‘ì²©)
+  # hë²ˆì§¸ ê¸°ì € í•¨ìˆ˜ëŠ” h, h+1, ..., h+degree ê³„ìˆ˜ì™€ ê´€ë ¨ë¨
   group_indices <- h:(h + degree)
-  # °è¼ö°¡ ¹üÀ§¸¦ ¹ş¾î³ªÁö ¾Êµµ·Ï Á¶Á¤
+  # ê³„ìˆ˜ê°€ ë²”ìœ„ë¥¼ ë²—ì–´ë‚˜ì§€ ì•Šë„ë¡ ì¡°ì •
   group_indices <- group_indices[group_indices <= num_basis]
   groups[[h]] <- group_indices
 }
 
-# ¿¹½Ã: ±×·ì ±¸Á¶ È®ÀÎ
-cat("\n±×·ì ±¸Á¶ÀÇ Ã¹ 5°³ ±×·ì:\n")
+# ì˜ˆì‹œ: ê·¸ë£¹ êµ¬ì¡° í™•ì¸
+cat("\nê·¸ë£¹ êµ¬ì¡°ì˜ ì²« 5ê°œ ê·¸ë£¹:\n")
 print(groups[1:5])
 
-# SCAD Æä³ÎÆ¼ ÇÔ¼ö Á¤ÀÇ
+# SCAD í˜ë„í‹° í•¨ìˆ˜ ì •ì˜
 scad <- function(beta, lambda, gamma = 3.7) {
   abs_beta <- abs(beta)
   penalty <- ifelse(abs_beta <= lambda, lambda * abs_beta,
@@ -336,7 +336,7 @@ scad <- function(beta, lambda, gamma = 3.7) {
   return(penalty)
 }
 
-# SCAD Æä³ÎÆ¼ ÇÔ¼ö Á¤ÀÇ (±×·ì ´ÜÀ§)
+# SCAD í˜ë„í‹° í•¨ìˆ˜ ì •ì˜ (ê·¸ë£¹ ë‹¨ìœ„)
 scad_group <- function(beta_group, lambda, gamma = 3.7) {
   norm_beta <- sqrt(sum(beta_group^2))
   if (norm_beta <= lambda) {
@@ -348,14 +348,14 @@ scad_group <- function(beta_group, lambda, gamma = 3.7) {
   }
 }
 
-# ÀüÃ¼ ¼Õ½Ç ÇÔ¼ö °è»ê
+# ì „ì²´ ì†ì‹¤ í•¨ìˆ˜ ê³„ì‚°
 calculate_piecewise_loss <- function(beta, sigma, time_points, y, w, b_spline_basis, groups, lambda, gamma = 3.7) {
-  n <- dim(y)[1]       # »ùÇÃ ¼ö
-  p <- dim(y)[2]       # º¯¼ö ¼ö
+  n <- dim(y)[1]       # ìƒ˜í”Œ ìˆ˜
+  p <- dim(y)[2]       # ë³€ìˆ˜ ìˆ˜
   time_steps <- length(time_points)
-  Jn <- dim(b_spline_basis)[2]  # B-spline °è¼öÀÇ ¼ö
+  Jn <- dim(b_spline_basis)[2]  # B-spline ê³„ìˆ˜ì˜ ìˆ˜
   
-  # ÀÜÂ÷ Á¦°öÇÕ °è»ê
+  # ì”ì°¨ ì œê³±í•© ê³„ì‚°
   rss <- 0
   for (k in 1:n) {
     for (i in 1:p) {
@@ -377,7 +377,7 @@ calculate_piecewise_loss <- function(beta, sigma, time_points, y, w, b_spline_ba
     }
   }
   
-  # SCAD Æä³ÎÆ¼ °è»ê (±×·ì ´ÜÀ§)
+  # SCAD í˜ë„í‹° ê³„ì‚° (ê·¸ë£¹ ë‹¨ìœ„)
   penalty <- 0
   for (g in 1:length(groups)) {
     group_indices <- groups[[g]]
@@ -385,42 +385,42 @@ calculate_piecewise_loss <- function(beta, sigma, time_points, y, w, b_spline_ba
     penalty <- penalty + scad_group(beta_group, lambda, gamma)
   }
   
-  # ÃÖÁ¾ ¼Õ½Ç ÇÔ¼ö °ª
+  # ìµœì¢… ì†ì‹¤ í•¨ìˆ˜ ê°’
   loss <- (1 / (2 * n * time_steps)) * rss + penalty
   return(loss)
 }
 
-# Proximal Gradient MethodÀ» ÀÌ¿ëÇÑ ÃÖÀûÈ­ ÇÔ¼ö Á¤ÀÇ
+# Proximal Gradient Methodì„ ì´ìš©í•œ ìµœì í™” í•¨ìˆ˜ ì •ì˜
 optimize_with_proximal_gradient <- function(y, X, groups, lambda, gamma = 3.7, max_iter = 1000, tol = 1e-6) {
   J <- ncol(X)
-  beta <- rep(0, J)  # ÃÊ±â°ª
-  step_size <- 1 / (max(eigen(t(X) %*% X)$values) + 1)  # ½ºÅÜ »çÀÌÁî ¼³Á¤
+  beta <- rep(0, J)  # ì´ˆê¸°ê°’
+  step_size <- 1 / (max(eigen(t(X) %*% X)$values) + 1)  # ìŠ¤í… ì‚¬ì´ì¦ˆ ì„¤ì •
   
   for (iter in 1:max_iter) {
-    # ±×¶óµğ¾ğÆ® °è»ê
+    # ê·¸ë¼ë””ì–¸íŠ¸ ê³„ì‚°
     residual <- y - X %*% beta
     grad <- -t(X) %*% residual
     
-    # ±×¶óµğ¾ğÆ® ½ºÅÜ
+    # ê·¸ë¼ë””ì–¸íŠ¸ ìŠ¤í…
     beta_new <- beta - step_size * grad
     
-    # ÇÁ·Î½Ã¸Ö ¿¬»ê (±×·ì SCAD ÆĞ³ÎÆ¼)
+    # í”„ë¡œì‹œë©€ ì—°ì‚° (ê·¸ë£¹ SCAD íŒ¨ë„í‹°)
     for (g in 1:length(groups)) {
       idx <- groups[[g]]
       beta_subset <- beta_new[idx]
       
-      # SCAD ÇÁ·Î½Ã¸Ö ÇÔ¼ö Àû¿ë
+      # SCAD í”„ë¡œì‹œë©€ í•¨ìˆ˜ ì ìš©
       norm_beta <- sqrt(sum(beta_subset^2))
       if (norm_beta == 0) {
         beta_new[idx] <- 0
       } else {
-        # ±×·ì SCAD ÇÁ·Î½Ã¸Ö ¿¬»ê
+        # ê·¸ë£¹ SCAD í”„ë¡œì‹œë©€ ì—°ì‚°
         shrinkage <- max(0, 1 - scad(norm_beta, lambda, gamma) / norm_beta)
         beta_new[idx] <- shrinkage * beta_subset
       }
     }
     
-    # ¼ö·Å ¿©ºÎ È®ÀÎ
+    # ìˆ˜ë ´ ì—¬ë¶€ í™•ì¸
     if (sum(abs(beta_new - beta)) < tol) {
       cat("Converged at iteration", iter, "\n")
       break
@@ -435,36 +435,36 @@ optimize_with_proximal_gradient <- function(y, X, groups, lambda, gamma = 3.7, m
   return(beta)
 }
 
-# ¼±ÅÃµÈ º¯¼ö ½Ö¿¡ ´ëÇØ B-spline ¸ğµ¨À» ÇÇÆÃÇÏ°í °è¼ö ÀúÀå
+# ì„ íƒëœ ë³€ìˆ˜ ìŒì— ëŒ€í•´ B-spline ëª¨ë¸ì„ í”¼íŒ…í•˜ê³  ê³„ìˆ˜ ì €ì¥
 spline_coefficients <- list()
 
 for (pair in selected_pairs) {
   i <- pair[1]
   j <- pair[2]
   
-  cat("\n¼±ÅÃµÈ º¯¼ö ½Ö:", i, "-", j, "\n")
+  cat("\nì„ íƒëœ ë³€ìˆ˜ ìŒ:", i, "-", j, "\n")
   
-  # °¢ ½Ã°£ ´Ü°è¿¡¼­ÀÇ ºÎºĞ »ó°ü °è¼ö ÃßÃâ
+  # ê° ì‹œê°„ ë‹¨ê³„ì—ì„œì˜ ë¶€ë¶„ ìƒê´€ ê³„ìˆ˜ ì¶”ì¶œ
   rho_ij_t <- sapply(partial_correlations, function(rho_mat) {
     if (!is.null(rho_mat)) rho_mat[i, j] else NA
   })
   
   if (all(is.na(rho_ij_t))) {
-    cat("Warning: ºÎºĞ »ó°ü °è¼ö¿¡ NA °ª¸¸ Æ÷ÇÔµÇ¾î ÀÖ½À´Ï´Ù. ÇØ´ç º¯¼ö ½ÖÀ» °Ç³Ê¶İ´Ï´Ù.\n")
+    cat("Warning: ë¶€ë¶„ ìƒê´€ ê³„ìˆ˜ì— NA ê°’ë§Œ í¬í•¨ë˜ì–´ ìˆìŠµë‹ˆë‹¤. í•´ë‹¹ ë³€ìˆ˜ ìŒì„ ê±´ë„ˆëœë‹ˆë‹¤.\n")
     spline_coefficients[[paste(i, j, sep = "_")]] <- rep(NA, ncol(bs_basis))
     next
   }
   
-  # °áÃøÄ¡ Á¦°Å
+  # ê²°ì¸¡ì¹˜ ì œê±°
   valid_idx <- which(!is.na(rho_ij_t))
   y_fit <- rho_ij_t[valid_idx]
   X_fit <- bs_basis[valid_idx, ]
   
-  # SCAD Æä³ÎÆ¼ Àû¿ëÀ» À§ÇÑ ÃÖÀûÈ­
-  lambda <- 0.1  # Æä³ÎÆ¼ ¸Å°³º¯¼ö (Á¶Á¤ °¡´É)
-  gamma <- 3.7    # SCAD ¸Å°³º¯¼ö
+  # SCAD í˜ë„í‹° ì ìš©ì„ ìœ„í•œ ìµœì í™”
+  lambda <- 0.1  # í˜ë„í‹° ë§¤ê°œë³€ìˆ˜ (ì¡°ì • ê°€ëŠ¥)
+  gamma <- 3.7    # SCAD ë§¤ê°œë³€ìˆ˜
   
-  # ÇÁ·Î½Ã¸Ö ±×·¡µğ¾ğÆ® ¾Ë°í¸®ÁòÀ» »ç¿ëÇÑ ÃÖÀûÈ­
+  # í”„ë¡œì‹œë©€ ê·¸ë˜ë””ì–¸íŠ¸ ì•Œê³ ë¦¬ì¦˜ì„ ì‚¬ìš©í•œ ìµœì í™”
   beta_est <- optimize_with_proximal_gradient(y = y_fit, X = X_fit, groups = groups, 
                                               lambda = lambda, gamma = gamma, 
                                               max_iter = 1000, tol = 1e-6)
@@ -472,7 +472,7 @@ for (pair in selected_pairs) {
   spline_coefficients[[paste(i, j, sep = "_")]] <- beta_est
 }
 
-# ¼±ÅÃµÈ º¯¼ö ½ÖÀÇ ºÎºĞ »ó°ü °è¼ö ¹× ½ºÇÃ¶óÀÎ ±âÀú ÇÔ¼ö µ¥ÀÌÅÍ¸¦ µ¥ÀÌÅÍ ÇÁ·¹ÀÓÀ¸·Î º¯È¯
+# ì„ íƒëœ ë³€ìˆ˜ ìŒì˜ ë¶€ë¶„ ìƒê´€ ê³„ìˆ˜ ë° ìŠ¤í”Œë¼ì¸ ê¸°ì € í•¨ìˆ˜ ë°ì´í„°ë¥¼ ë°ì´í„° í”„ë ˆì„ìœ¼ë¡œ ë³€í™˜
 plot_data <- data.frame(
   Time = rep(time_points, length(selected_pairs)),
   Pair = rep(sapply(selected_pairs, function(x) paste(x[1], x[2], sep = "_")), each = time_steps),
@@ -485,7 +485,7 @@ plot_data <- data.frame(
     pair_name <- paste(pair[1], pair[2], sep = "_")
     if (!is.null(spline_coefficients[[pair_name]]) && !any(is.na(spline_coefficients[[pair_name]]))) {
       beta_est <- spline_coefficients[[pair_name]]
-      # °è¼ö ÁßÃ¸À» ¹İ¿µÇÏ¿© ½ºÇÃ¶óÀÎ °ªÀ» °è»ê
+      # ê³„ìˆ˜ ì¤‘ì²©ì„ ë°˜ì˜í•˜ì—¬ ìŠ¤í”Œë¼ì¸ ê°’ì„ ê³„ì‚°
       fitted_values <- bs_basis %*% beta_est
       return(fitted_values)
     } else {
@@ -494,19 +494,19 @@ plot_data <- data.frame(
   }))
 )
 
-# `plot_data` »óÅÂ È®ÀÎ
-cat("\nplot_data »óÅÂ:\n")
+# `plot_data` ìƒíƒœ í™•ì¸
+cat("\nplot_data ìƒíƒœ:\n")
 print(head(plot_data))
 
-# `plot_data` NA °ª È®ÀÎ
+# `plot_data` NA ê°’ í™•ì¸
 if (any(is.na(plot_data$SplineValue))) {
-  cat("Warning: SplineValue¿¡ NA °ªÀÌ Æ÷ÇÔµÇ¾î ÀÖ½À´Ï´Ù. ½Ã°¢È­ ½Ã ÀÏºÎ µ¥ÀÌÅÍ°¡ Á¦¿ÜµÉ ¼ö ÀÖ½À´Ï´Ù.\n")
+  cat("Warning: SplineValueì— NA ê°’ì´ í¬í•¨ë˜ì–´ ìˆìŠµë‹ˆë‹¤. ì‹œê°í™” ì‹œ ì¼ë¶€ ë°ì´í„°ê°€ ì œì™¸ë  ìˆ˜ ìˆìŠµë‹ˆë‹¤.\n")
 }
 
-# `Pair` º¯¼ö¸¦ factor·Î º¯È¯ÇÏ¿© ÀÌ»êÇü º¯¼ö·Î ÀÎ½ÄÇÏ°Ô ÇÔ
+# `Pair` ë³€ìˆ˜ë¥¼ factorë¡œ ë³€í™˜í•˜ì—¬ ì´ì‚°í˜• ë³€ìˆ˜ë¡œ ì¸ì‹í•˜ê²Œ í•¨
 plot_data$Pair <- as.factor(plot_data$Pair)
 
-# ggplot2¸¦ »ç¿ëÇÏ¿© ºÎºĞ »ó°ü °è¼ö ½Ã°¢È­
+# ggplot2ë¥¼ ì‚¬ìš©í•˜ì—¬ ë¶€ë¶„ ìƒê´€ ê³„ìˆ˜ ì‹œê°í™”
 ggplot(data = plot_data, aes(x = Time, y = PartialCorrelation, color = Pair)) +
   geom_point(size = 2, alpha = 0.6) +
   geom_line(size = 1) +
@@ -514,15 +514,15 @@ ggplot(data = plot_data, aes(x = Time, y = PartialCorrelation, color = Pair)) +
     values = c("blue", "green", "red", "purple", "orange"),
     name = "Variable Pairs"
   ) +
-  labs(title = "½Ã°£¿¡ µû¸¥ ºÎºĞ »ó°ü °è¼ö",
-       x = "½Ã°£ (t)",
-       y = "ºÎºĞ »ó°ü °è¼ö") +
+  labs(title = "ì‹œê°„ì— ë”°ë¥¸ ë¶€ë¶„ ìƒê´€ ê³„ìˆ˜",
+       x = "ì‹œê°„ (t)",
+       y = "ë¶€ë¶„ ìƒê´€ ê³„ìˆ˜") +
   theme_minimal()
 
-# spline_coefficientsÀÇ Ã¹ ¸î °³ È®ÀÎ
+# spline_coefficientsì˜ ì²« ëª‡ ê°œ í™•ì¸
 print(spline_coefficients[1:2])
 
-# ggplot2¸¦ »ç¿ëÇÏ¿© ºÎºĞ »ó°ü °è¼ö¿Í B-spline ±âÀú ÇÔ¼ö ½Ã°¢È­
+# ggplot2ë¥¼ ì‚¬ìš©í•˜ì—¬ ë¶€ë¶„ ìƒê´€ ê³„ìˆ˜ì™€ B-spline ê¸°ì € í•¨ìˆ˜ ì‹œê°í™”
 ggplot() +
   geom_line(data = spline_data_long, aes(x = Time, y = Value, group = Spline), 
             color = "grey", size = 0.5, alpha = 0.3) +
@@ -534,10 +534,10 @@ ggplot() +
     values = c("blue", "green", "red", "purple", "orange"),
     name = "Variable Pairs"
   ) +
-  labs(title = "½Ã°£¿¡ µû¸¥ ºÎºĞ »ó°ü °è¼ö ¹× B-spline ±âÀú ÇÔ¼ö",
-       x = "½Ã°£ (t)",
-       y = "ºÎºĞ »ó°ü °è¼ö / ½ºÇÃ¶óÀÎ °ª") +
+  labs(title = "ì‹œê°„ì— ë”°ë¥¸ ë¶€ë¶„ ìƒê´€ ê³„ìˆ˜ ë° B-spline ê¸°ì € í•¨ìˆ˜",
+       x = "ì‹œê°„ (t)",
+       y = "ë¶€ë¶„ ìƒê´€ ê³„ìˆ˜ / ìŠ¤í”Œë¼ì¸ ê°’") +
   theme_minimal()
-#È¸»ö ½ºÇÃ¶óÀÎ: ½ºÇÃ¶óÀÎ ±âÀú ÇÔ¼öÀÇ ÁßÃ¸¼ºÀ» ½Ã°¢ÀûÀ¸·Î È®ÀÎÇÒ ¼ö ÀÖ½À´Ï´Ù.
-#Èñ¼Ò¼º: ¸¹Àº º¯¼ö ½ÖÀÌ È¸»ö ½ºÇÃ¶óÀÎ¸¸ Ç¥½ÃµÇ°í, ÁÖ¿ä º¯¼ö ½Ö¸¸ »ö»óº°·Î °­Á¶µÇ¾ú´Ù¸é Èñ¼Ò¼ºÀÌ Àß À¯µµµÈ °ÍÀÔ´Ï´Ù
+#íšŒìƒ‰ ìŠ¤í”Œë¼ì¸: ìŠ¤í”Œë¼ì¸ ê¸°ì € í•¨ìˆ˜ì˜ ì¤‘ì²©ì„±ì„ ì‹œê°ì ìœ¼ë¡œ í™•ì¸í•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.
+#í¬ì†Œì„±: ë§ì€ ë³€ìˆ˜ ìŒì´ íšŒìƒ‰ ìŠ¤í”Œë¼ì¸ë§Œ í‘œì‹œë˜ê³ , ì£¼ìš” ë³€ìˆ˜ ìŒë§Œ ìƒ‰ìƒë³„ë¡œ ê°•ì¡°ë˜ì—ˆë‹¤ë©´ í¬ì†Œì„±ì´ ì˜ ìœ ë„ëœ ê²ƒì…ë‹ˆë‹¤
 
